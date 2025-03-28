@@ -17,16 +17,23 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest flake8
+          pip install pytest flake8 pytest-html flake8-html
 
       - name: Run flake8 (critical errors)
         run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          mkdir -p reports
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --format=html --htmldir=reports/flake8_critical
 
       - name: Run flake8 (style check)
         run: |
-          flake8 . --count --ignore=E501 --exit-zero --statistics
+          flake8 . --count --ignore=E501 --exit-zero --statistics --format=html --htmldir=reports/flake8_style
 
       - name: Run pytest
         run: |
-          pytest
+          pytest --junitxml=reports/pytest_results.xml --html=reports/pytest_report.html --self-contained-html
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: reports
